@@ -12,13 +12,15 @@
 
 // Set your version in num and name
 let VERSION = {
-	num: "1.2",
+	num: "1.3",
 	name: "",
 }
 
 let changelog = `<h1>更新:</h1><br>
+	<h3>v1.3</h3><br>
+		- 添加大量token内容以及一个ap里程碑,当前endgame:约e6e9点数.<br><br>
 	<h3>v1.2</h3><br>
-		- 添加新挑战,当前endgame:约e2.5e9点数,1e120高德纳箭头点.<br><br>
+		- 添加新ap挑战,当前endgame:约e2.5e9点数,1e120高德纳箭头点.<br><br>
 	<h3>v1.1</h3><br>
 		- 添加一些token内容,ac21可完成,当前endgame:约e2e9点数,e32高德纳箭头点.<br><br>
 	<h3>v1.1-beta-0.2</h3><br>
@@ -108,7 +110,8 @@ function getPointGen(calc = false) {
 	
 	if(inChallenge("a",11) || player.t.nerf.AC.eq(1) || player.t.nerf.AC.eq(3)) gain = gain.pow(0.33)
 	if(inChallenge("a",12) || player.t.nerf.AC.eq(2) || player.t.nerf.AC.eq(3)) gain = gain.pow(0.5)
-	if(inChallenge("a",21)) gain = gain.pow(0.25)
+	if(inChallenge("a",21) || !player.t.nerf.AC.eq(0)) gain = gain.pow(0.25)
+	if(!player.t.nerf.AC.eq(0)) gain = gain.pow(0.2)
 	gain = gain.root(player.t.nerf.point)
 
 	if(gain.gt(1e100)){
@@ -141,13 +144,13 @@ var displayThings = [
 		if(inChallenge("a",12) || player.t.nerf.AC.eq(2) || player.t.nerf.AC.eq(3)) basestr = basestr + `(${format(calcTickspeed())})`
 		return basestr
 	},
-	function(){return `当前endgame:约e2.5e9点数,1e120高德纳箭头点.`},
+	function(){return `当前endgame:约e6e9点数`},
 	function(){return `作者:QwQ(QwQe308,qq3174905334).`},
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.points.gte("e2.5e9")&&player.a.points.gte(1e120)
+	return player.points.gte("e6e9")
 }
 
 

@@ -20,7 +20,9 @@
         return mult
     },
     gainExp() { // Calculate the exponent on main currency from bonuses
-        return new ExpantaNum(1)
+        var exp = e(1)
+        exp = exp.mul(tokenEffect(32))
+        return exp
     },
     row: 2, // Row the layer is in on the tree (0 is the first row)  QwQ:1也可以当第一排
     branches:["p"],
@@ -179,7 +181,7 @@
         var base = this.base
         if(!this.base) base = new ExpantaNum(2)
         if(this.baseAmount().lt(this.requires())) return new ExpantaNum(0)
-        var gain = this.baseAmount().pow(this.gainExp()).mul(this.gainMult()).div(this.requires()).logBase(this.base).root(this.exponent).add(1).sub(player[this.layer].points).floor().max(0)
+        var gain = this.baseAmount().mul(this.gainMult()).div(this.requires()).pow(this.gainExp()).logBase(this.base).root(this.exponent).add(1).sub(player[this.layer].points).floor().max(0)
         if(!this.canBuyMax()) return new ExpantaNum(1)
         return gain
         /*
@@ -227,15 +229,23 @@ addLayer("g", {
         return mult
     },
     gainExp() { // Calculate the exponent on main currency from bonuses
-        return new ExpantaNum(1)
+        var exp = new ExpantaNum(1)
+        exp = exp.mul(tokenEffect(31))
+        exp = exp.mul(tokenEffect(23))
+        exp = exp.mul(tokenEffect(32))
+        return exp
     },
     row: 2, // Row the layer is in on the tree (0 is the first row)  QwQ:1也可以当第一排
     branches:["p"],
     layerShown(){return hasMilestone("a",23)},
     proc(){
-        var eff = player[this.layer].points.add(1).pow(0.25)
+        var g = player[this.layer].points
+        if(hasMilestone("a",35) && g.gt(15000)) g = g.div(15000).pow(4).tetr(1.2).mul(15000)
+        var eff = g.add(1).pow(0.25)
         if(hasUpgrade("p",44)) eff = eff.pow(upgradeEffect("p",44))
         if(hasMilestone("a",27)) eff = eff.pow(1.25)
+        eff = logsoftcap(eff,e("e10000"),0.1)
+        eff = powsoftcap(eff,e("e10000"),2.5)
         return eff.sub(1)
     },
     effect(){
@@ -427,7 +437,7 @@ addLayer("g", {
             var base = this.base
             if(!this.base) base = new ExpantaNum(2)
             if(this.baseAmount().lt(this.requires())) return new ExpantaNum(0)
-            var gain = this.baseAmount().div(this.requires()).logBase(base).root(this.exponent).add(1).sub(player[this.layer].points).floor().max(0)
+            var gain = this.baseAmount().mul(this.gainMult()).div(this.requires()).pow(this.gainExp()).logBase(base).root(this.exponent).add(1).sub(player[this.layer].points).floor().max(0)
             if(!this.canBuyMax() && gain.gte(1)) return new ExpantaNum(1)
             return gain
             /*

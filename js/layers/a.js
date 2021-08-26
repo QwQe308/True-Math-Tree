@@ -42,6 +42,9 @@ function getResetUGain(){
     resetUgain = new OmegaNum(resetUgain)
     if(hasMilestone("a",21)) resetUgain = resetUgain.mul(player.a.points.add(10).log10().pow(0.75))
     if(inChallenge("a",12) || hasChallenge("a",12)) resetUgain = resetUgain.mul(logsoftcap(calcTickspeed().add(10).log10(),e(1000),e(0.2)))
+
+    resetUgain = resetUgain.pow(tokenEffect(22))
+
     resetUgain = resetUgain.root(player.t.nerf.RAU)
     return resetUgain.floor()
 }
@@ -294,7 +297,7 @@ addLayer("a", {
             },
         },
         14: {
-            description(){return "p转的sin函数被替换为1.5.<br><br>价格增长倍率:x1.5."},
+            description(){return `p转的sin函数被替换为1.5.<br><br>价格增长倍率:x${format(this.costinc())}.`},
             cost(){return new OmegaNum(75).mul(player.a.costmult)},
             costinc(){return ExpantaNum(1.5).pow(player.t.nerf.APU)},//注：omeganum或数字都行
             unlocked(){return checkAroundUpg("a",14)},
@@ -1350,6 +1353,7 @@ addLayer("a", {
                 c = c.div(upgradeEffect("p",55))
                 }
                 if(hasMilestone("a",29)) c = c.div(layers.g.effect2())
+                c = c.root(tokenEffect(33))
                 return c
             },
             display() { return `基于最高pp倍增b和cmax.这同时影响ap上限.<br />x${format(buyableEffect(this.layer,this.id),2)}.<br />费用:${format(this.cost(getBuyableAmount(this.layer, this.id)))}ap<br>等级:${formatWhole(getBuyableAmount(this.layer, this.id))}` },
@@ -1361,6 +1365,7 @@ addLayer("a", {
             },
             buyMax(){
                 var basep = player.a.points
+                basep = basep.pow(tokenEffect(33))
                 if(hasMilestone("a",29)) basep = basep.mul(layers.g.effect2())
                 if(hasUpgrade("p",55)){
                     basep = basep.mul(upgradeEffect("p",55))
@@ -1399,6 +1404,7 @@ addLayer("a", {
                     c = c.div(upgradeEffect("p",55))
                 }
                 if(hasMilestone("a",29)) c = c.div(layers.g.effect2())
+                c = c.root(tokenEffect(33))
                 return c
             },
             display() { return `基于ap倍增cmax.这同时影响上一个ap可重复购买项.<br />x${format(buyableEffect(this.layer,this.id),2)}.<br />费用:${format(this.cost(getBuyableAmount(this.layer, this.id)))}ap<br>等级:${formatWhole(getBuyableAmount(this.layer, this.id))}` },
@@ -1410,6 +1416,7 @@ addLayer("a", {
             },
             buyMax(){
                 var basep = player.a.points
+                basep = basep.pow(tokenEffect(33))
                 if(hasMilestone("a",29)) basep = basep.mul(layers.g.effect2())
                 if(hasUpgrade("p",55)){
                     basep = basep.mul(upgradeEffect("p",55))
@@ -1490,6 +1497,7 @@ addLayer("a", {
         player.a.ppbest = player.p.points.max(player.a.ppbest)
         if(hasMilestone("a",24)) player.a.points = player.a.points.max(3)
         if(hasMilestone("t",6)) player.a.resetU = player.a.resetU.add(getResetUGain().mul(diff*0.01))
+        player.a.points = player.a.points.add(this.getResetGain().mul(Math.min(diff*this.getPassiveGeneration(),1)))
 
         //auto
         for(i in player[this.layer].buyables){
@@ -1706,9 +1714,15 @@ addLayer("a", {
             done() { return player.points.gte("e2e9") },
             unlocked(){return hasMilestone(this.layer,this.id-1)||hasMilestone(this.layer,this.id) },
         },
+        35: {
+            requirementDescription: "36:15000发生器.",
+            effectDescription: "发生器超过15000时,发生器计数改为 15000*((x/15000)^4)^^1.2.",
+            done() { return player.g.points.gte(15000) },
+            unlocked(){return hasMilestone(this.layer,this.id-1)||hasMilestone(this.layer,this.id) },
+        },
     },
-    passiveGeneration(){
-        if(hasMilestone("a",22)) return 10
+    getPassiveGeneration(){
+        if(hasMilestone("a",22) || hasMilestone("t",17)) return 10
         if(hasMilestone("a",21)) return 1
         if(hasMilestone("a",20) || (hasMilestone("a",33) && player.a.upgrades.length > 0)) return 0.1
         return 0
@@ -1720,6 +1734,10 @@ addLayer("a", {
         //if(gain.gte(5)) gain = gain.pow(0.75).mul(5**0.25)
         if(gain.gte(100000)) gain = gain.cbrt().mul(100000**0.66666666666)
         gain = logsoftcap(gain,e(1e33),0.75)
+
+        //after softcap - token milestone 17 effect
+        if(hasMilestone("t",16)) if(hasUpgrade("p",51)) gain = gain.mul(upgradeEffect("p",51).sqrt())
+
         if(player.a.points.add(gain).gt(getAPlimit())) return getAPlimit().sub(player.a.points).max(0)
         return gain.floor()
     },

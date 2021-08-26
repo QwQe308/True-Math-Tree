@@ -42,6 +42,17 @@ function tokenEffect(id){
     return layers.t.clickables[id].effect()
 }
 
+function gainToken(id,gain){
+    player.t.tokens[id] = player.t.tokens[id].add(gain)
+    if(hasMilestone("t",18)){
+        if(id==11) return
+        if(id == 12 || id == 13 || id == 14) return gainToken(id-1,gain)
+        if(id == 21 || id == 31 || id == 41) return gainToken(id-10,gain)
+        gainToken(id-1,gain)
+        gainToken(id-10,gain)
+    }
+}
+
 addLayer("t", {
     name: "token", // This is optional, only used in a few places, If absent it just uses the layer id.
     symbol: "✦", // This appears on the layer's node. Default is the id with the first letter capitalized
@@ -79,6 +90,7 @@ addLayer("t", {
     },
     gainExp() { // Calculate the exponent on main currency from bonuses
         var exp = new ExpantaNum(1)
+        exp = exp.mul(tokenEffect(14))
         //if(hasMilestone("a",0)&&!hasUpgrade("a",15)) exp = exp.mul(0.5)
         //if(hasUpgrade("a",15)) exp = exp.mul(2)
         return exp
@@ -90,18 +102,23 @@ addLayer("t", {
         eff = logsoftcap(eff,e("e10"),0.25)
         return eff
     },
-    onPrestige(gain){player.t.tokens[player.t.currentC] = player.t.tokens[player.t.currentC].add(gain);doACreset(false)},
+    onPrestige(gain){
+        gainToken(player.t.currentC,gain);doACreset(false)
+    },
     effectDescription(){return `使pp*${format(this.effect(),0)}`},
     clickables: {
         11: {
             canClick(){return true},
-            display() {var baseSTR = "C" + this.id;if(player.t.currentC == this.id) baseSTR += "<br>您在该挑战中!";baseSTR += `<br>您有${player.t.tokens[this.id]}个${this.id}代币(token)`;baseSTR += this.effDesp();return baseSTR},
+            display() {var baseSTR = "C" + this.id;if(player.t.currentC == this.id) baseSTR += "<br>您在该挑战中!";baseSTR += `<br>您有${formatWhole(player.t.tokens[this.id])}个${this.id}代币(token)`;baseSTR += this.effDesp();return baseSTR},
             effect(){
                 var eff = player.t.tokens[this.id].div(10).add(1).pow(0.75)
                 eff = eff.pow(tokenEffect(12))
                 eff = powsoftcap(eff,e(1.5),2)
                 eff = powsoftcap(eff,e(3),4)
                 eff = logsoftcap(eff,e(20),0.33)
+                eff = logsoftcap(eff,e(30),0.25)
+                eff = logsoftcap(eff,e(200),0.25)
+                if(!player.t.nerf.AC.eq(0)) eff = eff.cbrt()
                 return eff
             },
             effDesp(){
@@ -111,11 +128,14 @@ addLayer("t", {
         },
         12: {
             canClick(){return true},
-            display() {var baseSTR = "C" + this.id;if(player.t.currentC == this.id) baseSTR += "<br>您在该挑战中!";baseSTR += `<br>您有${player.t.tokens[this.id]}个${this.id}代币(token)`;baseSTR += this.effDesp();return baseSTR},
+            display() {var baseSTR = "C" + this.id;if(player.t.currentC == this.id) baseSTR += "<br>您在该挑战中!";baseSTR += `<br>您有${formatWhole(player.t.tokens[this.id])}个${this.id}代币(token)`;baseSTR += this.effDesp();return baseSTR},
             effect(){
                 var eff = player.t.tokens[this.id].div(3).add(1).pow(0.75)
                 eff = powsoftcap(eff,e(1.5),3)
                 eff = powsoftcap(eff,e(2),3)
+                eff = powsoftcap(eff,e(5),3)
+                eff = powsoftcap(eff,e(10),2)
+                eff = logsoftcap(eff,e(15),0.25)
                 return eff
             },
             effDesp(){
@@ -125,13 +145,14 @@ addLayer("t", {
         },
         13: {
             canClick(){return true},
-            display() {var baseSTR = "C" + this.id;if(player.t.currentC == this.id) baseSTR += "<br>您在该挑战中!";baseSTR += `<br>您有${player.t.tokens[this.id]}个${this.id}代币(token)`;baseSTR += this.effDesp();return baseSTR},
+            display() {var baseSTR = "C" + this.id;if(player.t.currentC == this.id) baseSTR += "<br>您在该挑战中!";baseSTR += `<br>您有${formatWhole(player.t.tokens[this.id])}个${this.id}代币(token)`;baseSTR += this.effDesp();return baseSTR},
             effect(){
                 var eff = player.t.tokens[this.id].mul(31.4).add(1).pow(0.616)
                 //eff = powsoftcap(eff,e(4),3)
                 //eff = powsoftcap(eff,e(10),5)
                 eff = logsoftcap(eff,e(1000),0.2)
                 eff = powsoftcap(eff,e(1000),2)
+                eff = logsoftcap(eff,e(2000),0.2)
                 return eff
             },
             effDesp(){
@@ -139,9 +160,23 @@ addLayer("t", {
             },            
             onClick(){doACreset(false,this.id);player.t.currentC = this.id}
         },
+        14: {
+            canClick(){return true},
+            display() {var baseSTR = "C" + this.id;if(player.t.currentC == this.id) baseSTR += "<br>您在该挑战中!";baseSTR += `<br>您有${formatWhole(player.t.tokens[this.id])}个${this.id}代币(token)`;baseSTR += this.effDesp();return baseSTR},
+            effect(){
+                var eff = player.t.tokens[this.id].add(1).pow(0.05)
+                eff = powsoftcap(eff,e(1.2),2)
+                eff = powsoftcap(eff,e(1.5),2)
+                return eff
+            },
+            effDesp(){
+                return "使得代币获取^"+format(this.effect(),2)
+            },
+            onClick(){doACreset(false,this.id);player.t.currentC = this.id}
+        },
         21: {
             canClick(){return true},
-            display() {var baseSTR = "C" + this.id;if(player.t.currentC == this.id) baseSTR += "<br>您在该挑战中!";baseSTR += `<br>您有${player.t.tokens[this.id]}个${this.id}代币(token)`;baseSTR += this.effDesp();return baseSTR},
+            display() {var baseSTR = "C" + this.id;if(player.t.currentC == this.id) baseSTR += "<br>您在该挑战中!";baseSTR += `<br>您有${formatWhole(player.t.tokens[this.id])}个${this.id}代币(token)`;baseSTR += this.effDesp();return baseSTR},
             effect(){
                 var eff = player.t.tokens[this.id].add(1).pow(0.616)
                 eff = powsoftcap(eff,e(4),3)
@@ -153,22 +188,80 @@ addLayer("t", {
             },
             onClick(){doACreset(false,this.id);player.t.currentC = this.id}
         },
-        /*
         22: {
             canClick(){return true},
-            display() {var baseSTR = "C" + this.id;if(player.t.currentC == this.id) baseSTR += "<br>您在该挑战中!";baseSTR += `<br>您有${player.t.tokens[this.id]}个${this.id}代币(token)`;baseSTR += this.effDesp();return baseSTR},
+            display() {var baseSTR = "C" + this.id;if(player.t.currentC == this.id) baseSTR += "<br>您在该挑战中!";baseSTR += `<br>您有${formatWhole(player.t.tokens[this.id])}个${this.id}代币(token)`;baseSTR += this.effDesp();return baseSTR},
             effect(){
                 var eff = player.t.tokens[this.id].add(1).pow(0.616)
-                eff = powsoftcap(eff,e(4),3)
-                eff = powsoftcap(eff,e(10),5)
+                eff = powsoftcap(eff,e(4),2)
+                eff = powsoftcap(eff,e(10),2)
+                eff = logsoftcap(eff,e(15),0.2)
                 return eff
             },
             effDesp(){
-                return "使得倍增器效果^"+format(this.effect(),2)
+                return "使得RAU获取^"+format(this.effect(),2)
             },
             onClick(){doACreset(false,this.id);player.t.currentC = this.id}
         },
-        */
+        23: {
+            canClick(){return true},
+            display() {var baseSTR = "C" + this.id;if(player.t.currentC == this.id) baseSTR += "<br>您在该挑战中!";baseSTR += `<br>您有${formatWhole(player.t.tokens[this.id])}个${this.id}代币(token)`;baseSTR += this.effDesp();return baseSTR},
+            effect(){
+                var eff = player.t.tokens[this.id].add(1).pow(0.5)
+                eff = powsoftcap(eff,e(2),2)
+                eff = powsoftcap(eff,e(5),2)
+                eff = powsoftcap(eff,e(10),2)
+                eff = powsoftcap(eff,e(25),2)
+                return eff
+            },
+            effDesp(){
+                return "使得发生器价格^(1/"+format(this.effect(),2)+")"
+            },
+            onClick(){doACreset(false,this.id);player.t.currentC = this.id}
+        },
+        31: {
+            canClick(){return true},
+            display() {var baseSTR = "C" + this.id;if(player.t.currentC == this.id) baseSTR += "<br>您在该挑战中!";baseSTR += `<br>您有${formatWhole(player.t.tokens[this.id])}个${this.id}代币(token)`;baseSTR += this.effDesp();return baseSTR},
+            effect(){
+                var eff = player.t.tokens[this.id].add(1).pow(0.2)
+                eff = powsoftcap(eff,e(2),2)
+                eff = powsoftcap(eff,e(5),2)
+                return eff
+            },
+            effDesp(){
+                return "使得发生器价格^(1/"+format(this.effect(),2)+")"
+            },
+            onClick(){doACreset(false,this.id);player.t.currentC = this.id}
+        },
+        32: {
+            canClick(){return true},
+            display() {var baseSTR = "C" + this.id;if(player.t.currentC == this.id) baseSTR += "<br>您在该挑战中!";baseSTR += `<br>您有${formatWhole(player.t.tokens[this.id])}个${this.id}代币(token)`;baseSTR += this.effDesp();return baseSTR},
+            effect(){
+                var eff = player.t.tokens[this.id].add(1).pow(0.175)
+                eff = powsoftcap(eff,e(2),2)
+                eff = powsoftcap(eff,e(5),2)
+                return eff
+            },
+            effDesp(){
+                return "使得发生器&倍增器价格^(1/"+format(this.effect(),2)+")"
+            },
+            onClick(){doACreset(false,this.id);player.t.currentC = this.id}
+        },
+        33: {
+            canClick(){return true},
+            display() {var baseSTR = "C" + this.id;if(player.t.currentC == this.id) baseSTR += "<br>您在该挑战中!";baseSTR += `<br>您有${formatWhole(player.t.tokens[this.id])}个${this.id}代币(token)`;baseSTR += this.effDesp();return baseSTR},
+            effect(){
+                var eff = player.t.tokens[this.id].add(1).pow(0.314)
+                eff = powsoftcap(eff,e(4),2)
+                eff = powsoftcap(eff,e(10),2)
+                eff = logsoftcap(eff,e(25),0.2)
+                return eff
+            },
+            effDesp(){
+                return "使得ap购买项价格^(1/"+format(this.effect(),2)+")(在g节点的价格降低后)"
+            },
+            onClick(){doACreset(false,this.id);player.t.currentC = this.id}
+        },
     },
     /*upgrades: {
         11: {
@@ -421,10 +514,39 @@ addLayer("t", {
             done() { return player.t.tokens[13].gte(2500) },
             unlocked(){return hasMilestone(this.layer,this.id-1)||hasMilestone(this.layer,this.id) },
         },
+        15: {
+            requirementDescription: "16:25000medal",
+            effectDescription: "每秒获得10%的medal和token.",
+            done() { return player.t.points.gte(25000) },
+            unlocked(){return hasMilestone(this.layer,this.id-1)||hasMilestone(this.layer,this.id) },
+        },
+        16: {
+            requirementDescription: "17:10000c22token",
+            effectDescription: "p51的效果的平方根作用于a点1e33软上限后.",
+            done() { return player.t.tokens[22].gte(10000) },
+            unlocked(){return hasMilestone(this.layer,this.id-1)||hasMilestone(this.layer,this.id) },
+        },
+        17: {
+            requirementDescription: "18:10000c32token",
+            effectDescription: "每秒获得1000%的ap.",
+            done() { return player.t.tokens[32].gte(10000) },
+            unlocked(){return hasMilestone(this.layer,this.id-1)||hasMilestone(this.layer,this.id) },
+        },
+        18: {
+            requirementDescription: "19:10000c14token",
+            effectDescription: "当一个挑战获得token时,该挑战左方和上方的挑战也获得等量token.注:如33->23,32->22*2,13,31......",
+            done() { return player.t.tokens[32].gte(10000) },
+            unlocked(){return hasMilestone(this.layer,this.id-1)||hasMilestone(this.layer,this.id) },
+        },
+    },
+    passiveGeneration(){
+        if(hasMilestone("t",15)) return 0.1
+        return 0
     },
     //important!!!
     update(diff){
         player.t.nerf = calcTotalTokenCNerf()
+        gainToken(player.t.currentC,getResetGain(this.layer).mul(diff).mul(this.passiveGeneration()))
         //auto
         /*for(row=1;row<=2;row++){
             for(col=1;col<=3;col++){
@@ -502,7 +624,7 @@ addLayer("t", {
                 ["display-text", function() {return "C1^n(n代表次数) : 无效果."}],
                 ["display-text", function() {return "C2^n : 点数^0.6^n , AP ^0.75^n^4,若n>=2则再次ap^0.2,并使ap上限^0.8^(n-1)^2.(软上限后)"}],
                 ["display-text", function() {return "C3^n : pp^0.25^n^1.5 , ts ^0.5^n , AP升级价格增长^3.5^n^0.6 RAU^0.33^n , au31只计算当前ap + C2^n."}],
-                ["display-text", function() {return "C4^n : n=1:开启AC11 n=2:开启AC12. n=3:同时获得前两个效果. + C3^n"}],
+                ["display-text", function() {return "C4^n : n=1:开启AC11 n=2:开启AC12. n=3:同时获得前两个效果. + ac21 + token11效果^0.33 + C3^n"}],
                 ["blank", "30px"],
                 ["display-text", function() {return "Cab = Ca^2 + Cb"}],
                 ["display-text", function() {return "如c24 = C2^2 + C4"}],
@@ -517,9 +639,9 @@ addLayer("t", {
                 ["display-text", function() {return `RAU变为其${format(player.t.nerf.RAU)}次根`}],
                 ["display-text", function() {return `au31是否只计算当前ap:${format(player.t.nerf.au31)?"是":"否"}`}],
                 ["display-text", function() {
-                    if(player.t.nerf.AC.eq(1)) return `开启AC11`
-                    if(player.t.nerf.AC.eq(2)) return `开启AC12`
-                    if(player.t.nerf.AC.eq(3)) return `开启AC11,12`
+                    if(player.t.nerf.AC.eq(1)) return `开启AC11,21`
+                    if(player.t.nerf.AC.eq(2)) return `开启AC12,21`
+                    if(player.t.nerf.AC.eq(3)) return `开启AC11,12,21`
                     return ``
                 }],
                 //"clickables",// "resource-display",

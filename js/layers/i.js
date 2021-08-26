@@ -24,7 +24,7 @@ addLayer("i", {
     effect(){
         var eff = player[this.layer].points.root(2)
         if(inChallenge("a",11) || hasChallenge("a",11)) eff = eff.pow(3)
-        if(inChallenge("a",21)) eff = one
+        if(inChallenge("a",21) || !player.t.nerf.AC.eq(0)) eff = one
         eff = eff.pow(tokenEffect(13))
         return eff
     },

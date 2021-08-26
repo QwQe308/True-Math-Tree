@@ -63,7 +63,7 @@ addLayer("p", {
                 //p22:sin to p11
                 if(hasUpgrade("p",22)) baseEff = baseEff.mul(upgradeEffect("p",22))
                 //ac21:/1000
-                if(inChallenge("a",21)) baseEff = baseEff.div(1000)
+                if(inChallenge("a",21) || !player.t.nerf.AC.eq(0)) baseEff = baseEff.div(1000)
                 return baseEff.max(1)
             },
             effectDisplay(){return `x${format(upgradeEffect("p",11),1)}`}
