@@ -1490,8 +1490,8 @@ addLayer("a", {
 
     //important!!!
     update(diff){    
-        player.a.limitBest = player.a.limitBest.max(getAPlimit())
-        player.a.best = player.a.limitBest.min(player.a.best)
+        //player.a.limitBest = player.a.limitBest.max(getAPlimit())
+        //player.a.best = player.a.limitBest.min(player.a.best)
         player.a.points = player.a.points.min(getAPlimit().floor())
         player.a.pointbest = player.points.max(player.a.pointbest)
         player.a.ppbest = player.p.points.max(player.a.ppbest)
