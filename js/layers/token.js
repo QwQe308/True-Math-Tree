@@ -535,7 +535,7 @@ addLayer("t", {
         18: {
             requirementDescription: "19:10000c14token",
             effectDescription: "当一个挑战获得token时,该挑战左方和上方的挑战也获得等量token.注:如33->23,32->22*2,13,31......",
-            done() { return player.t.tokens[32].gte(10000) },
+            done() { return player.t.tokens[14].gte(10000) },
             unlocked(){return hasMilestone(this.layer,this.id-1)||hasMilestone(this.layer,this.id) },
         },
     },
